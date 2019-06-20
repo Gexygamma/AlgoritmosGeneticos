@@ -2,8 +2,8 @@ import copy
 import os
 
 def clearScreen():
-   # Limpia la terminal.
-   os.system('cls' if os.name == 'nt' else 'clear')
+	# Limpia la terminal.
+	os.system('cls' if os.name == 'nt' else 'clear')
 
 def numberToList(number, minListSize):
 	# Convierte un numero decimal en una lista de bits.
