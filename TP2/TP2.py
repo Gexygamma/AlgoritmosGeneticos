@@ -1,5 +1,6 @@
 import copy
 import os
+import time
 
 def clearScreen():
 	# Limpia la terminal.
@@ -23,6 +24,14 @@ def numberToList(number, minListSize):
 	bitList.reverse()
 	return bitList
 
+def printResults(bag):
+	# Imprimir en pantalla el resultado encontrado.
+	print("Valor máximo posible: ", bag.getTotalValue())
+	print("Volumen total: ", bag.getTotalVolume())
+	print("Elementos encontrados: ")
+	for element in bag.getSortedContentByValue():
+		print("Valor: {} | Volumen: {}".format(element.value, element.volume))
+
 class Bag(object):
 	# size (int): capacidad de volumen máxima.
 	# content (list): lista de elementos contenidos.
@@ -37,6 +46,9 @@ class Bag(object):
 	def addElement(self, element):
 		# Agregar elemento a la mochila.
 		self.content.append(element)
+
+	def popLastElement(self):
+		self.content.pop()
 
 	def getSortedContentByValue(self):
 		# Devolver contenido de la mochila ordenado por valor.
@@ -70,6 +82,48 @@ class Element(object):
 		# Constructor de la clase.
 		self.volume = volume
 		self.value = value
+		self.ratio = value / volume
+
+def busquedaExhaustiva(elementList, maxSize):
+	# Crear primera mochila vacia y marcarla como resultado óptimo.
+	# Se usará como punto de partida para comparar futuros resultados.
+	maxBag = Bag(maxSize)
+
+	for i in range(1, 2 ** len(elementList)):
+
+		# Crear nueva mochila.
+		bag = Bag(maxSize)
+
+		# Crear un patrón de bits, relativo a la iteración actual.
+		bitPattern = numberToList(i, len(elementList))
+
+		# Dependiendo del patrón, agregar los elementos seleccionados a la mochila.
+		for n in range(len(elementList)):
+			if bitPattern[n] == 1:
+				bag.addElement(elementList[n])
+
+		# Comparar mochila actual con el máximo encontrado.
+		if (not bag.isOverloaded()) and (bag.getTotalValue() > maxBag.getTotalValue()):
+			maxBag = bag
+
+	return maxBag
+
+def busquedaGreedy(elementList, maxSize):
+
+	# Crear nueva mochila.
+	bag = Bag(maxSize)
+
+	# Ordenar lista de elementos relativo a la relacion valor / volumen.
+	elementList.sort(key = lambda Element: Element.ratio)
+	elementList.reverse()
+
+	# Ejecutar busqueda greedy.
+	for element in elementList:
+		bag.addElement(element)
+		if bag.isOverloaded():
+			bag.popLastElement()
+
+	return bag
 
 ### PROGRAMA
 
@@ -90,32 +144,12 @@ elements = [
 	Element(353, 28)
 ]
 
-# Crear primera mochila vacia y marcarla como resultado óptimo.
-# Se usará como punto de partida para comparar futuros resultados.
-maxBag = Bag(maxSize)
+start_time = time.time()
 
-for i in range(1, 2 ** len(elements)):
+# bag = busquedaExhaustiva(elements, maxSize)
+bag = busquedaGreedy(elements, maxSize)
+printResults(bag)
 
-	# Crear nueva mochila.
-	bag = Bag(maxSize)
-
-	# Crear un patrón de bits, relativo a la iteración actual.
-	bitPattern = numberToList(i, len(elements))
-
-	# Dependiendo del patrón, agregar los elementos seleccionados a la mochila.
-	for n in range(len(elements)):
-		if bitPattern[n] == 1:
-			bag.addElement(elements[n])
-
-	# Comparar mochila actual con el máximo encontrado.
-	if (not bag.isOverloaded()) and (bag.getTotalValue() > maxBag.getTotalValue()):
-		maxBag = bag
-
-# Imprimir en pantalla el resultado encontrado.
-print("Valor máximo posible: ", maxBag.getTotalValue())
-print("Volumen total: ", maxBag.getTotalVolume())
-print("Elementos óptimos: ")
-for element in maxBag.getSortedContentByValue():
-	print("Valor: {} | Volumen: {}".format(element.value, element.volume))
+print("--- %s seconds ---" % (time.time() - start_time))
 
 input("Presione una tecla para finalizar...")
