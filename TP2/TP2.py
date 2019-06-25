@@ -61,7 +61,7 @@ class Bag(object):
 
 	def isOverloaded(self):
 		# Obtener si el contenido sobrepaso la capacidad máxima.
-		return self.getTotalVolume() <= self.size
+		return (self.getTotalVolume() > self.size)
 
 class Element(object):
 	# volume (int): volumen del elemento en cm^2.
@@ -118,4 +118,4 @@ print("Elementos óptimos: ")
 for element in maxBag.getSortedContentByValue():
 	print("Valor: {} | Volumen: {}".format(element.value, element.volume))
 
-input()
+input("Presione una tecla para finalizar...")
