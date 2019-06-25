@@ -40,10 +40,10 @@ class Bag(object):
 
 	def getSortedContentByValue(self):
 		# Devolver contenido de la mochila ordenado por valor.
-		orderedContent = copy.deepcopy(self.content)
-		orderedContent.sort(key = lambda Element: Element.value)
-		orderedContent.reverse()
-		return orderedContent
+		sortedContent = copy.deepcopy(self.content)
+		sortedContent.sort(key = lambda Element: Element.value)
+		sortedContent.reverse()
+		return sortedContent
 
 	def getTotalValue(self):
 		# Obtener suma de todos los valores de los elementos en la mochila.
@@ -52,12 +52,16 @@ class Bag(object):
 			totalValue += element.value
 		return totalValue
 
-	def isOverloaded(self):
-		# Obtener si el contenido sobrepaso la capacidad máxima.
+	def getTotalVolume(self):
+		# Obtener suma de todos los volumenes de los elementos de la mochila.
 		totalVolume = 0
 		for element in self.content:
 			totalVolume += element.volume
-		return totalVolume <= self.size
+		return totalVolume
+
+	def isOverloaded(self):
+		# Obtener si el contenido sobrepaso la capacidad máxima.
+		return self.getTotalVolume() <= self.size
 
 class Element(object):
 	# volume (int): volumen del elemento en cm^2.
@@ -104,11 +108,14 @@ for i in range(1, 2 ** len(elements)):
 			bag.addElement(elements[n])
 
 	# Comparar mochila actual con el máximo encontrado.
-	if not bag.isOverloaded() & (bag.getTotalValue() > maxBag.getTotalValue()):
+	if (not bag.isOverloaded()) and (bag.getTotalValue() > maxBag.getTotalValue()):
 		maxBag = bag
 
 # Imprimir en pantalla el resultado encontrado.
 print("Valor máximo posible: ", maxBag.getTotalValue())
+print("Volumen total: ", maxBag.getTotalVolume())
 print("Elementos óptimos: ")
 for element in maxBag.getSortedContentByValue():
-print("Valor: {} | Volumen: {}".format(element.value, element.volume))
+	print("Valor: {} | Volumen: {}".format(element.value, element.volume))
+
+input()
