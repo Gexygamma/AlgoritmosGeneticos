@@ -5,9 +5,6 @@ import pandas as pd
 from pandas import ExcelWriter
 from pandas import ExcelFile
  
-# Obtener matriz de distancias
-df = pd.read_excel('TablaCapitales.xlsx')
- 
 # Crear lista de capitales
 nombresCapital = [
     "Ciudad de Buenos Aires",
@@ -41,6 +38,7 @@ chromSize = len(nombresCapital) # Son 24 capitales
 probCrossover = 0.75
 probMutacion = 0.1
 number_list = list(range(chromSize))
+distance_matrix = []
  
 def clearScreen():
     # Limpia la terminal
@@ -50,22 +48,33 @@ def decision(probability):
     # Toma una decision aleatoria en base a una probabilidad
     return rnd.random() < probability
  
+def loadMatrix():
+    # Carga matriz de distancias en memoria desde un archivo xlsx
+    try: 
+        data = pd.read_excel('TP3/TablaCapitales.xlsx')
+    except FileNotFoundError:
+        data = pd.read_excel('TablaCapitales.xlsx')
+    for i in range(chromSize):
+        distance_matrix.append([])
+        for j in range(chromSize):
+            distance_matrix[i].append(data.iloc[i, j+1])
+
 def distance(capital1, capital2):
     # Calcula distancia entre dos capitales
-    return df.iloc[capital1, capital2+1]
+    return distance_matrix[capital1][capital2]
  
 class Chromosome(object):
  
     def __init__(self, size, madre=None, padre=None, punto=None):
         # Constructor del cromosoma
-        self.gen = number_list
+        self.gen = []
         if madre == None:
             self.gen = rnd.sample(number_list, size)
             self.calculateScore()
         elif padre != None:
             index = 0
+            self.gen = [None]*size
             while(True):
-                print(index)
                 self.gen[index] = madre.gen[index]
                 index = madre.gen.index(padre.gen[index])
                 if (index == 0):
@@ -80,7 +89,10 @@ class Chromosome(object):
  
     def asString(self):
         # Devuelve un string en base al arreglo de genes
-        return ",".join(self.gen)
+        string = []
+        for i in range(24):
+            string.append(str(self.gen[i]))
+        return ",".join(string)
  
     def calculateScore(self):
         # Calcula y guarda el puntaje, que representa la distancia recorrida
@@ -91,7 +103,7 @@ class Chromosome(object):
  
     def calculateFitness(self, totalScore):
         # Calcula y guarda el valor fitness
-        self.fitness = totalScore/self.score
+        self.fitness = 1 - self.score/totalScore
  
     def mutate(self):
         # Muta al cromosoma, intercambiando dos genes aleatorios de lugar
@@ -187,9 +199,12 @@ class Population(object):
 #################################
  
 clearScreen()
- 
+
+# Carga matriz en memoria
+loadMatrix()
+
 # Obtener número de iteraciones del usuario
-iteraciones = 100 #int(input("Ingrese cantidad de iteraciones a ejecutar: "))
+iteraciones = int(input("Ingrese cantidad de iteraciones a ejecutar: "))
  
 # Crear primera instancia de la población
 newPopulation = Population()
