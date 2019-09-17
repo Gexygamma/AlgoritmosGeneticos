@@ -9,6 +9,8 @@ print(" pandas...")
 import pandas as pd
 from pandas import ExcelWriter
 from pandas import ExcelFile
+print(" PIL/pillow...")
+from PIL import Image, ImageDraw
 print("Hecho!")
  
 # Crear lista de capitales
@@ -17,26 +19,53 @@ nombresCapital = [
 	"Córdoba",
 	"Corrientes",
 	"Formosa",
-	"La Plata",
+	"La Plata", #4
 	"La Rioja",
 	"Mendoza",
 	"Neuquen",
-	"Paraná",
+	"Paraná", #8
 	"Posadas",
 	"Rawson",
 	"Resistencia",
-	"Río Gallegos",
+	"Río Gallegos", #12
 	"San Fernando del Valle de Catamarca",
 	"San Miguel de Tucumán",
 	"San Salvador de Jujuy",
-	"Salta",
+	"Salta", #16
 	"San Juan",
 	"San Luis",
 	"Santa Fe",
-	"Santa Rosa",
+	"Santa Rosa", #20
 	"Santiago del Estero",
 	"Ushuaia",
 	"Viedma" ]
+
+coordenadas = [
+	(350, 388),
+	(217, 288),
+	(353, 179),
+	(363, 136),
+	(354, 398),
+	(157, 249),
+	(110, 342),
+	(129, 522),
+	(310, 305),
+	(423, 182),
+	(204, 649),
+	(341, 172),
+	(148, 905),
+	(172, 208),
+	(186, 164),
+	(188, 85),
+	(183, 95),
+	(112, 305),
+	(166, 345),
+	(301, 298),
+	(217, 454),
+	(214, 185),
+	(179, 990),
+	(243, 577)
+]
 
 # Inicializar parámetros de ejecución
 popSize = 50
@@ -69,14 +98,32 @@ def distance(capital1, capital2):
 	# Calcula distancia entre dos capitales
 	return distance_matrix[capital1][capital2]
 
-def nearestCapital(recorrido):
-	capital = recorrido[-1]
+def nearestCapital(path):
+	capital = path[-1]
 	distanciaMinima = -1
 	for i in range(chromSize):
-		if (not i in recorrido) & ((distance(i, capital) < distanciaMinima) | (distanciaMinima == -1)):
+		if (not i in path) & ((distance(i, capital) < distanciaMinima) | (distanciaMinima == -1)):
 			distanciaMinima = distance(i, capital)
 			closest = i
 	return closest
+
+def drawChromToFile(chrom):
+	# Dibuja el recorrido de un cromosoma dado
+	print("Armando recorrido en mapa... ", end="")
+	try:
+		im = Image.open("TP3/base.png")
+	except:
+		im = Image.open("base.png")
+	draw = ImageDraw.Draw(im)
+	for i in range(len(chrom.gen)-1):
+		capital1 = chrom.gen[i]
+		capital2 = chrom.gen[i+1]
+		draw.line(coordenadas[capital1]+coordenadas[capital2], fill=128, width=4)
+	draw.line(coordenadas[chrom.gen[-1]]+coordenadas[chrom.gen[0]], fill=128, width=4)
+	im.show() # A veces no funca :(
+	filename = "Mapa_{date}.png".format(date=datetime.datetime.now().strftime("%d-%m-%Y_%H%M%S"))
+	im.save(filename, "PNG")
+	print("Hecho!")
 
 class Chromosome(object):
  
@@ -239,6 +286,9 @@ def genetico():
 	 
 	resultChrom = prevPopulation.chromosomes[-1]
 	
+	# Dibujar camino óptimo
+	drawChromToFile(resultChrom)
+
 	# Imprimir resultado final en pantalla
 	print("Resultado\n Cromosoma: {chrom}\n Objetivo: {score}\n Fitness: {fitness}"
 		.format(
@@ -250,6 +300,7 @@ def genetico():
 def busquedaUnitaria():
 	capital = int(input("Ingrese la capital de partida: "))
 	resultChrom = heuristica(capital)
+	drawChromToFile(resultChrom)
 	print("Resultado\n Recorrido: {chrom}\n Objetivo: {score}\n"
 		.format(
 		   chrom = resultChrom.asString(),
@@ -263,6 +314,7 @@ def busquedaTotal():
 		if (resultChrom.score < bestScore) | (bestScore == 0):
 			bestScore = resultChrom.score
 			best = resultChrom
+	drawChromToFile(resultChrom)
 	print("Resultado\n Recorrido: {chrom}\n Objetivo: {score}\n"
 		.format(
 		   chrom = best.asString(),
