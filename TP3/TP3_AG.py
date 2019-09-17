@@ -125,6 +125,12 @@ def drawChromToFile(chrom):
 	im.save(filename, "PNG")
 	print("Hecho!")
 
+def printCities(chrom):
+	# Imprime en pantalla una lista con el recorrido de las ciudades
+	print("Recorrido:")
+	for c in chrom.gen:
+		print(" {nombre} ({numero})".format(nombre=nombresCapital[c], numero=c))
+
 class Chromosome(object):
  
 	def __init__(self, size=None, madre=None, padre=None, punto=None):
@@ -295,6 +301,7 @@ def genetico():
 		   chrom = resultChrom.asString(),
 		   score = resultChrom.score,
 		   fitness = resultChrom.fitness))
+	printCities(resultChrom)
 	input("Presione una tecla para volver al menú...")
 
 def busquedaUnitaria():
