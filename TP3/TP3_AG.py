@@ -62,13 +62,24 @@ def loadMatrix():
 def distance(capital1, capital2):
     # Calcula distancia entre dos capitales
     return distance_matrix[capital1][capital2]
+
+def nearestCapital(recorrido):
+    capital = recorrido[-1]
+    distanciaMinima = -1
+    for i in range(chromSize):
+    	if (not i in recorrido) & ((distance(i, capital) < distanciaMinima) | (distanciaMinima == -1)):
+            distanciaMinima = distance(i, capital)
+            closest = i
+    return closest
  
 class Chromosome(object):
  
-    def __init__(self, size, madre=None, padre=None, punto=None):
+    def __init__(self, size=None, madre=None, padre=None, punto=None):
         # Constructor del cromosoma
         self.gen = []
-        if madre == None:
+        if size == None:
+        	pass
+        elif madre == None:
             self.gen = rnd.sample(number_list, size)
             self.calculateScore()
         elif padre != None:
@@ -193,36 +204,88 @@ class Population(object):
         # Imprime en pantalla la lista de cromosomas
         for c in self.chromosomes:
             print(c.asString(), " f:", c.fitness)
+
+
+def heuristica(capitalInicial):
+    result = Chromosome()
+    result.gen.append(capitalInicial)
+    while (True):
+        result.gen.append(nearestCapital(result.gen))
+        if len(result.gen) == 24:
+        	result.calculateScore()
+        	break
+    return result
+
+def genetico():
+	# Obtener número de iteraciones del usuario
+	iteraciones = int(input("Ingrese cantidad de iteraciones a ejecutar: "))
+	 
+	# Crear primera instancia de la población
+	newPopulation = Population()
+	 
+	for n in range(iteraciones):
+	    # Calcular y guardar puntajes y valores fitness de los cromosomas
+	    newPopulation.calculateTotalScore()
+	    newPopulation.sortByFitness()
+	    # Crear nueva población en base a la anterior
+	    prevPopulation = newPopulation
+	    newPopulation = Population(prevPopulation)
+	 
+	resultChrom = prevPopulation.chromosomes[-1]
+	
+	# Imprimir resultado final en pantalla
+	print("Resultado\n Cromosoma: {chrom}\n Objetivo: {score}\n Fitness: {fitness}"
+	    .format(
+	       chrom = resultChrom.asString(),
+	       score = resultChrom.score,
+	       fitness = resultChrom.fitness))
+	input("Presione una tecla para volver al menú...")
+
+def busquedaUnitaria():
+	capital = int(input("Ingrese la capital de partida: "))
+	resultChrom = heuristica(capital)
+	print("Resultado\n Recorrido: {chrom}\n Objetivo: {score}\n"
+	    .format(
+	       chrom = resultChrom.asString(),
+	       score = resultChrom.score))
+	input("Presione una tecla para volver al menú...")
+
+def busquedaTotal():
+	bestScore = 0
+	for i in range(len(number_list)):
+		resultChrom = heuristica(i)
+		if (resultChrom.score < bestScore) | (bestScore == 0):
+			bestScore = resultChrom.score
+			best = resultChrom
+	print("Resultado\n Recorrido: {chrom}\n Objetivo: {score}\n"
+	    .format(
+	       chrom = best.asString(),
+	       score = best.score))
+	input("Presione una tecla para volver al menú...")
+	
  
 #################################
 # INICIO DEL PROGRAMA PRINCIPAL #
 #################################
- 
-clearScreen()
 
 # Carga matriz en memoria
 loadMatrix()
 
-# Obtener número de iteraciones del usuario
-iteraciones = int(input("Ingrese cantidad de iteraciones a ejecutar: "))
- 
-# Crear primera instancia de la población
-newPopulation = Population()
- 
-for n in range(iteraciones):
-    # Calcular y guardar puntajes y valores fitness de los cromosomas
-    newPopulation.calculateTotalScore()
-    newPopulation.sortByFitness()
-    # Crear nueva población en base a la anterior
-    prevPopulation = newPopulation
-    newPopulation = Population(prevPopulation)
- 
-resultChrom = prevPopulation.chromosomes[-1]
-
-# Imprimir resultado final en pantalla
-print("Resultado\n Cromosoma: {chrom}\n Objetivo: {score}\n Fitness: {fitness}"
-    .format(
-       chrom = resultChrom.asString(),
-       score = resultChrom.score,
-       fitness = resultChrom.fitness))
-input("Presione una tecla para cerrar...")
+opcion = 1
+while (opcion != 0):
+	clearScreen()
+	print("Menú de opciones - Problema del viajante")
+	print()
+	print("1- Búsqueda heurística dada una capital de partida")
+	print("2- Búsqueda heurística general")
+	print("3- Búsqueda mediante algoritmos genéticos")
+	print("0- Salir")
+	print()
+	opcion = int(input("Ingrese opción: "))
+	clearScreen()
+	if (opcion == 1):
+		busquedaUnitaria()
+	elif (opcion == 2):
+		busquedaTotal()
+	elif (opcion == 3):
+		genetico()
